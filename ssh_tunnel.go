@@ -38,14 +38,17 @@ func newConnectionWaiter(listener net.Listener, c chan net.Conn) {
 	c <- conn
 }
 
-func (tunnel *SSHTunnel) Start() error {
+func (tunnel *SSHTunnel) Listen() (net.Listener, error) {
 	listener, err := net.Listen("tcp", tunnel.Local.String())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	tunnel.isOpen = true
 	tunnel.Local.Port = listener.Addr().(*net.TCPAddr).Port
+	return listener, nil
+}
 
+func (tunnel *SSHTunnel) Serve(listener net.Listener) error {
 	// Ensure that MaxConnectionAttempts is at least 1. This check is done here
 	// since the library user can set the value at any point before Start() is called,
 	// and this check protects against the case where the programmer set MaxConnectionAttempts
@@ -90,7 +93,7 @@ func (tunnel *SSHTunnel) Start() error {
 			tunnel.logf(err.Error())
 		}
 	}
-	err = listener.Close()
+	err := listener.Close()
 	if err != nil {
 		return err
 	}

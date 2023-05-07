@@ -34,7 +34,8 @@ tunnel := sshtunnel.NewSSHTunnel(
    "dqrsdfdssdfx.us-east-1.redshift.amazonaws.com:5439",
    
    // The local port you want to bind the remote port to.
-   // Specifying "0" will lead to a random port.
+   // Specifying "0" will lead to an ephemeral port, which can be read
+   // either from listener.Addr or from tunnel.Local.Port
    "8443",
 )
 
@@ -42,15 +43,16 @@ tunnel := sshtunnel.NewSSHTunnel(
 // make it silent.
 tunnel.Log = log.New(os.Stdout, "", log.Ldate | log.Lmicroseconds)
 
-// Start the server in the background. You will need to wait a
-// small amount of time for it to bind to the localhost port
-// before you can start sending connections.
-go tunnel.Start()
-time.Sleep(100 * time.Millisecond)
+listener, err := tunnel.Listen()
+if err != nil {
+    panic(err)
+}
+// After having called tunnel.Listen(), there is no need to sleep, the port
+// is already allocated and bound. The address is available at
+// listener.Addr().String(), or the port at tunnel.Local.Port.  
 
-// NewSSHTunnel will bind to a random port so that you can have
-// multiple SSH tunnels available. The port is available through:
-//   tunnel.Local.Port
+// Start the server in the background.
+go tunnel.Serve(listener)
 
 // You can use any normal Go code to connect to the destination server
 // through localhost. You may need to use 127.0.0.1 for some libraries.
