@@ -151,28 +151,36 @@ func (tunnel *SSHTunnel) Close() {
 	return
 }
 
-// NewSSHTunnel creates a new single-use tunnel. Supplying "0" for localport will use a random port.
-func NewSSHTunnel(tunnel string, auth ssh.AuthMethod, destination string, localport string) *SSHTunnel {
+// NewSSHTunnel creates a new single-use tunnel.
+// Supplying 0 for localport will use an ephemeral port.
+func NewSSHTunnel(
+	tunnel Endpoint,
+	remote Endpoint,
+	auth ssh.AuthMethod,
+	localport int,
+) *SSHTunnel {
+	localEndpoint := Endpoint{
+		Host: "localhost",
+		Port: localport,
+	}
 
-	localEndpoint := NewEndpoint("localhost:" + localport)
-
-	server := NewEndpoint(tunnel)
-	if server.Port == 0 {
-		server.Port = 22
+	if tunnel.Port == 0 {
+		tunnel.Port = 22
 	}
 
 	sshTunnel := &SSHTunnel{
 		Config: &ssh.ClientConfig{
-			User: server.User,
+			User: tunnel.User,
 			Auth: []ssh.AuthMethod{auth},
-			HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+			HostKeyCallback: func(
+				hostname string, remote net.Addr, key ssh.PublicKey) error {
 				// Always accept key.
 				return nil
 			},
 		},
-		Local:  localEndpoint,
-		Server: server,
-		Remote: NewEndpoint(destination),
+		Local:  &localEndpoint,
+		Server: &tunnel,
+		Remote: &remote,
 		close:  make(chan interface{}),
 	}
 
