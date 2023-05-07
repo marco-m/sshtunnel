@@ -115,6 +115,7 @@ func (tunnel *SSHTunnel) forward(localConn net.Conn) {
 
 			if attemptsLeft <= 0 {
 				tunnel.logf("server dial error: %v: exceeded %d attempts", err, tunnel.MaxConnectionAttempts)
+				tunnel.Close()
 				return
 			}
 		} else {
@@ -128,6 +129,7 @@ func (tunnel *SSHTunnel) forward(localConn net.Conn) {
 	remoteConn, err := serverConn.Dial("tcp", tunnel.Remote.String())
 	if err != nil {
 		tunnel.logf("remote dial error: %s", err)
+		tunnel.Close()
 		return
 	}
 	tunnel.Conns = append(tunnel.Conns, remoteConn)
