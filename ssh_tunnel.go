@@ -105,10 +105,11 @@ func (tunnel *SSHTunnel) forward(localConn net.Conn) {
 	var (
 		serverConn   *ssh.Client
 		err          error
-		attemptsLeft int = tunnel.MaxConnectionAttempts
+		attemptsLeft = tunnel.MaxConnectionAttempts
 	)
 
 	for {
+		tunnel.logf("dialing jump %s", tunnel.Server.String())
 		serverConn, err = ssh.Dial("tcp", tunnel.Server.String(), tunnel.Config)
 		if err != nil {
 			attemptsLeft--
@@ -126,6 +127,7 @@ func (tunnel *SSHTunnel) forward(localConn net.Conn) {
 	tunnel.logf("connected to %s (1 of 2)\n", tunnel.Server.String())
 	tunnel.SvrConns = append(tunnel.SvrConns, serverConn)
 
+	tunnel.logf("dialing remote %s", tunnel.Remote.String())
 	remoteConn, err := serverConn.Dial("tcp", tunnel.Remote.String())
 	if err != nil {
 		tunnel.logf("remote dial error: %s", err)
