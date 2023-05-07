@@ -2,16 +2,18 @@
 
 Ultra simple SSH tunnelling for Go programs.
 
+## Fork notes
+
+This is a fork of [elliotchance/sshtunnel](https://github.com/elliotchance/sshtunnel) at v1.4.0:
+- the API is backwards incompatible!
+- the API will break again. 
+
+To make this more evident, the Go module name is now `github.com/marco-m/sshtunnel`.
+
 ## Installation
 
 ```bash
-go get -u github.com/elliotchance/sshtunnel
-```
-
-Or better with `dep`:
-
-```bash
-dep ensure -add github.com/elliotchance/sshtunnel
+go get -u github.com/marco-m/sshtunnel
 ```
 
 ## Example
